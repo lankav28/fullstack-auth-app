@@ -1,0 +1,204 @@
+/* 🌸 Backdrop & Centering */
+.task-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center; /* ✅ Centers vertically */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1050;
+  backdrop-filter: blur(6px);
+}
+
+.task-modal-backdrop.show {
+  opacity: 1;
+}
+
+/* 🌷 Modal Animation */
+.task-modal-dialog {
+  width: 100%;
+  max-width: 520px;
+  transform: scale(0.9) translateY(30px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.task-modal-dialog.show {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* 🌸 Modal Card */
+.task-modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 50px rgba(236, 72, 153, 0.15);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 182, 193, 0.4);
+}
+
+/* 💖 Header */
+.task-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #ffe4ef;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #fbcfe8, #f472b6);
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.2);
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ec4899;
+}
+
+.modal-subtitle {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.modern-close-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.modern-close-btn:hover {
+  transform: rotate(90deg);
+}
+
+/* 💫 Body */
+.task-modal-body {
+  padding: 1.5rem;
+}
+
+/* 🩷 Form Inputs */
+.modern-form-group {
+  margin-bottom: 1rem;
+}
+
+.modern-label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  display: block;
+  color: #5a3149;
+}
+
+.required {
+  color: #ec4899;
+}
+
+.modern-input,
+.modern-textarea,
+.modern-select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 2px solid #ffd6e8;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+.modern-input:focus,
+.modern-textarea:focus,
+.modern-select:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+  outline: none;
+}
+
+/* 🌸 Buttons */
+.task-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #ffe4ef;
+}
+
+.modern-btn {
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.modern-btn-primary {
+  background: linear-gradient(135deg, #ec4899, #a78bfa);
+  color: white;
+}
+
+.modern-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 20px rgba(236, 72, 153, 0.35);
+  transform: translateY(-2px);
+}
+
+.modern-btn-secondary {
+  background: #fff1f7;
+  color: #ec4899;
+}
+
+.modern-btn-secondary:hover:not(:disabled) {
+  background: #ffd6e8;
+  transform: translateY(-2px);
+}
+
+/* 🌀 Spinner */
+.modern-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.6s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ⚠️ Error Alert */
+.modern-alert-error {
+  background: #fff1f7;
+  color: #ec4899;
+  border: 1px solid #fbcfe8;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}

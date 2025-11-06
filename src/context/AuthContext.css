@@ -1,0 +1,210 @@
+/* 🌸 Pookie-Themed Toast Notification Styles */
+
+.modern-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  transform: translateX(400px);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.modern-toast-container.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Toast Shell */
+.modern-toast {
+  min-width: 320px;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.2);
+  overflow: hidden;
+  position: relative;
+  animation: toastBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  font-family: "Poppins", sans-serif;
+}
+
+/* Pop animation */
+@keyframes toastBounce {
+  0% {
+    transform: translateX(400px) scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-8px) scale(1.03);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Icon background */
+.toast-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: iconPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.2s backwards;
+  color: white;
+}
+
+@keyframes iconPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Toast Types 🌷 */
+.modern-toast-success {
+  border-left: 4px solid #ec4899;
+}
+.modern-toast-success .toast-icon-wrapper {
+  background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%);
+}
+
+.modern-toast-error {
+  border-left: 4px solid #f43f5e;
+}
+.modern-toast-error .toast-icon-wrapper {
+  background: linear-gradient(135deg, #fda4af 0%, #f43f5e 100%);
+}
+
+.modern-toast-warning {
+  border-left: 4px solid #f9a8d4;
+}
+.modern-toast-warning .toast-icon-wrapper {
+  background: linear-gradient(135deg, #fde2f3 0%, #f9a8d4 100%);
+}
+
+.modern-toast-info {
+  border-left: 4px solid #a78bfa;
+}
+.modern-toast-info .toast-icon-wrapper {
+  background: linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%);
+}
+
+/* Toast Text */
+.toast-message {
+  font-size: 15px;
+  font-weight: 500;
+  color: #3d3d3d;
+  line-height: 1.5;
+  animation: slideIn 0.4s ease 0.3s backwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Close Button */
+.toast-close-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #ffe6f1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ec4899;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.toast-close-btn:hover {
+  background: #fbcfe8;
+  transform: rotate(90deg);
+}
+.toast-close-btn:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+/* Progress Bar */
+.toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  transform-origin: left;
+  animation: progressBar 3s linear forwards;
+  border-bottom-left-radius: 10px;
+}
+
+@keyframes progressBar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Progress Colors */
+.modern-toast-success .toast-progress-bar {
+  background: linear-gradient(90deg, #f9a8d4 0%, #ec4899 100%);
+}
+.modern-toast-error .toast-progress-bar {
+  background: linear-gradient(90deg, #fda4af 0%, #f43f5e 100%);
+}
+.modern-toast-warning .toast-progress-bar {
+  background: linear-gradient(90deg, #f9a8d4 0%, #fbcfe8 100%);
+}
+.modern-toast-info .toast-progress-bar {
+  background: linear-gradient(90deg, #c4b5fd 0%, #a78bfa 100%);
+}
+
+/* Hover pauses progress */
+.modern-toast:hover .toast-progress-bar {
+  animation-play-state: paused;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .modern-toast-container {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .modern-toast {
+    min-width: auto;
+    max-width: 100%;
+  }
+  .toast-message {
+    font-size: 14px;
+  }
+  .toast-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+}
