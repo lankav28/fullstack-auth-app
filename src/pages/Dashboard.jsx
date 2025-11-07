@@ -31,9 +31,15 @@ export default function Dashboard() {
     if (statusFilter) params.append("status", statusFilter);
     if (priorityFilter) params.append("priority", priorityFilter);
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?${params.toString()}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+   const token = localStorage.getItem("token");
+
+const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`, // ✅ send the token!
+  },
+});
+
 
     const data = await res.json();
 
