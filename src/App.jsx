@@ -43,18 +43,20 @@ const LoadingScreen = () => (
   </div>
 );
 
-// 🔒 Protected route wrapper
+// 🔒 Protected route wrapper (for Dashboard)
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  return user ? children : <Navigate to="/login" replace />;
+  return user ? children : <Navigate to="/" replace />;
 };
 
-// 🌷 Public route wrapper
+// 🌷 Public route wrapper (for Landing, Login, Register)
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  return user ? <Navigate to="/dashboard" replace /> : children;
+
+  // ✅ Only redirect *after* loading finishes
+  return !user ? children : <Navigate to="/dashboard" replace />;
 };
 
 // 💫 Smooth animated transitions between pages

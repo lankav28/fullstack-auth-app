@@ -1,26 +1,48 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import "./AuthContext.css"; // Keep your existing styling
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import "./AuthContext.css";
 
-// Create Context
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  // ✅ Initialize from localStorage so first render is consistent
+  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
+  const [user, setUser] = useState(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [loading, setLoading] = useState(true);
+
+  // Toast state
   const [toast, setToast] = useState({ message: "", type: "" });
   const [isVisible, setIsVisible] = useState(false);
 
-  // Auto-fetch profile whenever token changes
+  // Avoid double fetches (React Strict Mode in dev mounts twice)
+  const fetchedOnce = useRef(false);
+
   useEffect(() => {
-    if (token) {
-      fetchProfile();
-    } else {
+    // If we have a token, verify it and refresh profile
+    if (!token) {
       setLoading(false);
+      return;
     }
+
+    // Prevent duplicate fetch in dev strict mode
+    if (fetchedOnce.current) return;
+    fetchedOnce.current = true;
+
+    fetchProfile().finally(() => {
+      setLoading(false);
+      // allow future refetches when token changes
+      fetchedOnce.current = false;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // ✅ Fetch user profile from backend (safe version)
   const fetchProfile = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
@@ -30,24 +52,27 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json().catch(() => ({}));
 
       if (res.status === 401) {
-        console.warn("⚠️ Token expired or invalid, logging out...");
-        setTimeout(() => logout(), 500); // gentle logout
-      } else if (res.ok && data.user) {
-        console.log("✅ Profile fetched successfully:", data.user);
+        // Token invalid/expired – do a gentle logout
+        console.warn("⚠️ Token invalid/expired, logging out");
+        logout();
+        return;
+      }
+
+      if (res.ok && data?.user) {
         setUser(data.user);
+        // Keep localStorage user in sync for a clean first render on refresh
+        localStorage.setItem("user", JSON.stringify(data.user));
+        console.log("✅ Profile fetched successfully:", data.user);
       } else {
         console.warn("⚠️ Profile fetch returned no user data:", data);
       }
     } catch (err) {
-      console.error("❌ Profile fetch failed (network or backend issue):", err.message);
-      // Don't logout on network issues — just show a toast
+      console.error("❌ Profile fetch failed:", err);
+      // Don’t logout on network hiccups; just keep user as-is
       showToast("Network issue while fetching profile", "warning");
-    } finally {
-      setLoading(false);
     }
   };
 
-  // ✅ Login function
   const login = (newToken, userData) => {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(userData));
@@ -56,7 +81,6 @@ export const AuthProvider = ({ children }) => {
     showToast("🎉 Login successful!", "success");
   };
 
-  // ✅ Logout function
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -65,7 +89,7 @@ export const AuthProvider = ({ children }) => {
     showToast("👋 Logged out successfully!", "info");
   };
 
-  // ✅ Toast utilities
+  // Toast helpers
   const showToast = (message, type = "info") => {
     setToast({ message, type });
     setIsVisible(true);
@@ -129,30 +153,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Keep the context value stable across renders
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      loading,
+      login,
+      logout,
+      fetchProfile,
+      showToast,
+    }),
+    [user, token, loading]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        login,
-        logout,
-        loading,
-        fetchProfile,
-        showToast,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
 
-      {/* ✅ Toast Notification */}
       {toast.message && (
         <div className={`modern-toast-container ${isVisible ? "show" : ""}`}>
           <div className={`modern-toast ${getToastClass(toast.type)}`}>
             <div className="toast-icon-wrapper">{getToastIcon(toast.type)}</div>
-
             <div className="toast-content">
               <div className="toast-message">{toast.message}</div>
             </div>
-
             <button
               type="button"
               className="toast-close-btn"
@@ -164,7 +189,6 @@ export const AuthProvider = ({ children }) => {
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
-
             <div className="toast-progress-bar"></div>
           </div>
         </div>
@@ -173,5 +197,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook export
+// Hook
 export const useAuth = () => useContext(AuthContext);
