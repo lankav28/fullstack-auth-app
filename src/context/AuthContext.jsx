@@ -1,94 +1,73 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+// src/context/AuthContext.jsx
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import "./AuthContext.css";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // ✅ Initialize from localStorage so first render is consistent
   const [token, setToken] = useState(() => localStorage.getItem("token") || null);
   const [user, setUser] = useState(() => {
     try {
-      const raw = localStorage.getItem("user");
-      return raw ? JSON.parse(raw) : null;
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
     }
   });
 
   const [loading, setLoading] = useState(true);
-
-  // Toast state
   const [toast, setToast] = useState({ message: "", type: "" });
   const [isVisible, setIsVisible] = useState(false);
-
-  // Avoid double fetches (React Strict Mode in dev mounts twice)
   const fetchedOnce = useRef(false);
 
+  // ✅ Verify token on initial load
   useEffect(() => {
-  const verifyToken = async () => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    if (fetchedOnce.current) return;
+    fetchedOnce.current = true;
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        console.warn("⚠️ Invalid token detected, clearing session...");
-        logout(); // this will remove token + user
+    const checkAuth = async () => {
+      const savedToken = localStorage.getItem("token");
+      if (!savedToken) {
+        setUser(null);
+        setLoading(false);
         return;
       }
 
-      const data = await res.json();
-      if (data.user) {
-        setUser(data.user);
-        console.log("✅ Profile verified:", data.user);
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
+          headers: { Authorization: `Bearer ${savedToken}` },
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.user) {
+          setUser(data.user);
+          setToken(savedToken);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          console.log("✅ User verified:", data.user);
+        } else {
+          console.warn("⚠️ Invalid or expired token, clearing session...");
+          logout(false); // silent logout
+        }
+      } catch (err) {
+        console.error("❌ Auth check failed:", err.message);
+        logout(false);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("❌ Token verification failed:", err.message);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  verifyToken();
-}, [token]);
+    checkAuth();
+  }, []);
 
-
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (res.status === 401) {
-        // Token invalid/expired – do a gentle logout
-        console.warn("⚠️ Token invalid/expired, logging out");
-        logout();
-        return;
-      }
-
-      if (res.ok && data?.user) {
-        setUser(data.user);
-        // Keep localStorage user in sync for a clean first render on refresh
-        localStorage.setItem("user", JSON.stringify(data.user));
-        console.log("✅ Profile fetched successfully:", data.user);
-      } else {
-        console.warn("⚠️ Profile fetch returned no user data:", data);
-      }
-    } catch (err) {
-      console.error("❌ Profile fetch failed:", err);
-      // Don’t logout on network hiccups; just keep user as-is
-      showToast("Network issue while fetching profile", "warning");
-    }
-  };
-
+  // ✅ Login
   const login = (newToken, userData) => {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(userData));
@@ -97,21 +76,38 @@ export const AuthProvider = ({ children }) => {
     showToast("🎉 Login successful!", "success");
   };
 
-  const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  setToken(null);
-  setUser(null);
-  showToast("👋 Logged out successfully!", "info");
+  // ✅ Logout (with optional redirect)
+  const logout = (redirect = true) => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+    if (redirect) {
+      showToast("👋 Logged out successfully!", "info");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 800);
+    }
+  };
 
-  // ✅ Redirect to landing page cleanly
-  setTimeout(() => {
-    window.location.href = "/";
-  }, 500);
-};
+  // ✅ Fetch profile manually
+  const fetchProfile = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+    } catch (err) {
+      console.warn("⚠️ Profile fetch failed:", err.message);
+    }
+  };
 
-
-  // Toast helpers
+  // ✅ Toast
   const showToast = (message, type = "info") => {
     setToast({ message, type });
     setIsVisible(true);
@@ -119,47 +115,6 @@ export const AuthProvider = ({ children }) => {
       setIsVisible(false);
       setTimeout(() => setToast({ message: "", type: "" }), 300);
     }, 3000);
-  };
-
-  const handleCloseToast = () => {
-    setIsVisible(false);
-    setTimeout(() => setToast({ message: "", type: "" }), 300);
-  };
-
-  const getToastIcon = (type) => {
-    switch (type) {
-      case "success":
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
-        );
-      case "error":
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-          </svg>
-        );
-      case "warning":
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-            <line x1="12" y1="9" x2="12" y2="13" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
-        );
-      default:
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
-        );
-    }
   };
 
   const getToastClass = (type) => {
@@ -175,17 +130,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Keep the context value stable across renders
   const value = useMemo(
-    () => ({
-      user,
-      token,
-      loading,
-      login,
-      logout,
-      fetchProfile,
-      showToast,
-    }),
+    () => ({ user, token, loading, login, logout, fetchProfile, showToast }),
     [user, token, loading]
   );
 
@@ -196,22 +142,9 @@ export const AuthProvider = ({ children }) => {
       {toast.message && (
         <div className={`modern-toast-container ${isVisible ? "show" : ""}`}>
           <div className={`modern-toast ${getToastClass(toast.type)}`}>
-            <div className="toast-icon-wrapper">{getToastIcon(toast.type)}</div>
             <div className="toast-content">
               <div className="toast-message">{toast.message}</div>
             </div>
-            <button
-              type="button"
-              className="toast-close-btn"
-              onClick={handleCloseToast}
-              aria-label="Close"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <div className="toast-progress-bar"></div>
           </div>
         </div>
       )}
@@ -219,5 +152,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook
 export const useAuth = () => useContext(AuthContext);

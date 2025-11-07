@@ -1,4 +1,4 @@
-// App.jsx
+// src/App.jsx
 import React from "react";
 import Landing from "./pages/Landing.jsx";
 import {
@@ -17,7 +17,6 @@ import "animate.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
-// 🌸 Soft pink loading screen (appears while AuthContext initializes)
 const LoadingScreen = () => (
   <div
     className="d-flex vh-100 justify-content-center align-items-center"
@@ -30,11 +29,7 @@ const LoadingScreen = () => (
       <div
         className="spinner-border"
         role="status"
-        style={{
-          width: "3rem",
-          height: "3rem",
-          color: "#ec4899",
-        }}
+        style={{ width: "3rem", height: "3rem", color: "#ec4899" }}
       ></div>
       <p className="mt-3 text-secondary fw-semibold">
         Loading your dashboard...
@@ -43,22 +38,20 @@ const LoadingScreen = () => (
   </div>
 );
 
-// 🔒 Protected route wrapper (for Dashboard)
+// 🔒 Private route (for dashboard)
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   return user ? children : <Navigate to="/" replace />;
 };
 
-// 🌷 Public route wrapper (for Landing, Login, Register)
+// 🌷 Public route (for landing/login/register)
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <LoadingScreen />; // wait until token verification finishes
+  if (loading) return <LoadingScreen />;
   return user ? <Navigate to="/dashboard" replace /> : children;
 };
 
-
-// 💫 Smooth animated transitions between pages
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -71,7 +64,6 @@ const AnimatedRoutes = () => {
         unmountOnExit
       >
         <Routes location={location}>
-          {/* Landing page (public homepage) */}
           <Route
             path="/"
             element={
@@ -80,8 +72,6 @@ const AnimatedRoutes = () => {
               </PublicRoute>
             }
           />
-
-          {/* Auth pages */}
           <Route
             path="/login"
             element={
@@ -98,8 +88,6 @@ const AnimatedRoutes = () => {
               </PublicRoute>
             }
           />
-
-          {/* Dashboard (protected area) */}
           <Route
             path="/dashboard"
             element={
@@ -108,8 +96,6 @@ const AnimatedRoutes = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </CSSTransition>
@@ -117,7 +103,6 @@ const AnimatedRoutes = () => {
   );
 };
 
-// 🌈 App Root
 function App() {
   return (
     <AuthProvider>
