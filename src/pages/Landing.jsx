@@ -1,7 +1,21 @@
-import React from "react";
+// src/pages/Landing.jsx
+import React, { useEffect } from "react";
 import { Sparkles } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Landing() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // ✅ If already logged in, redirect safely after auth check completes
+  useEffect(() => {
+    if (!loading && user) {
+      const timer = setTimeout(() => navigate("/dashboard", { replace: true }), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, user, navigate]);
+
   return (
     <>
       <style>{`
@@ -141,16 +155,13 @@ export default function Landing() {
           transition: left 0.5s ease;
         }
 
-        .btn:hover::before {
-          left: 100%;
-        }
+        .btn:hover::before { left: 100%; }
 
         .btn-primary {
           background: linear-gradient(135deg, #f472b6 0%, #a78bfa 100%);
           color: white;
           box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
         }
-
         .btn-primary:hover {
           transform: translateY(-2px);
           box-shadow: 0 10px 40px rgba(236, 72, 153, 0.45);
@@ -161,7 +172,6 @@ export default function Landing() {
           color: #f472b6;
           border: 2px solid #f9a8d4;
         }
-
         .btn-secondary:hover {
           background: #fff0f5;
           transform: translateY(-2px);
@@ -200,16 +210,16 @@ export default function Landing() {
           </p>
 
           <div className="btn-group">
-            <a href="/login" className="btn btn-primary">
+            <Link to="/login" className="btn btn-primary">
               Login
-            </a>
-            <a href="/register" className="btn btn-secondary">
+            </Link>
+            <Link to="/register" className="btn btn-secondary">
               Sign Up
-            </a>
+            </Link>
           </div>
 
           <div className="footer-text">
-            © {new Date().getFullYear()}  Task Manager 🌸
+            © {new Date().getFullYear()} Task Manager 🌸
           </div>
         </div>
       </div>
