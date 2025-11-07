@@ -25,23 +25,39 @@ export const AuthProvider = ({ children }) => {
   const fetchedOnce = useRef(false);
 
   useEffect(() => {
-    // If we have a token, verify it and refresh profile
+  const verifyToken = async () => {
     if (!token) {
       setLoading(false);
       return;
     }
 
-    // Prevent duplicate fetch in dev strict mode
-    if (fetchedOnce.current) return;
-    fetchedOnce.current = true;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    fetchProfile().finally(() => {
+      if (!res.ok) {
+        console.warn("⚠️ Invalid token detected, clearing session...");
+        logout(); // this will remove token + user
+        return;
+      }
+
+      const data = await res.json();
+      if (data.user) {
+        setUser(data.user);
+        console.log("✅ Profile verified:", data.user);
+      }
+    } catch (err) {
+      console.error("❌ Token verification failed:", err.message);
+      logout();
+    } finally {
       setLoading(false);
-      // allow future refetches when token changes
-      fetchedOnce.current = false;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    }
+  };
+
+  verifyToken();
+}, [token]);
+
 
   const fetchProfile = async () => {
     try {
@@ -82,12 +98,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setToken(null);
-    setUser(null);
-    showToast("👋 Logged out successfully!", "info");
-  };
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  setToken(null);
+  setUser(null);
+  showToast("👋 Logged out successfully!", "info");
+
+  // ✅ Redirect to landing page cleanly
+  setTimeout(() => {
+    window.location.href = "/";
+  }, 500);
+};
+
 
   // Toast helpers
   const showToast = (message, type = "info") => {

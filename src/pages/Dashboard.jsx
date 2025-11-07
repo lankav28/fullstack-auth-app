@@ -112,6 +112,43 @@ export default function Dashboard() {
         .stats-card { background:rgba(255,255,255,0.8); border-radius:20px; border:1px solid rgba(255,182,193,0.4); }
         .task-card { background:rgba(255,255,255,0.9); border-radius:22px; box-shadow:0 8px 24px rgba(236,72,153,0.12); transition:all .35s ease; }
         .task-card:hover { transform:translateY(-6px) scale(1.02); box-shadow:0 18px 45px rgba(236,72,153,0.25); }
+        /* 🌸 Task Action Buttons */
+.action-btn {
+  border-radius: 10px;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.action-btn-edit {
+  color: #ec4899;
+  border-color: #ec4899;
+  background: transparent;
+}
+
+.action-btn-edit:hover {
+  background: #ec4899;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
+}
+
+.action-btn-delete {
+  color: #f5576c;
+  border-color: #f5576c;
+  background: transparent;
+}
+
+.action-btn-delete:hover {
+  background: #f5576c;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+}
+
       `}</style>
 
       <div

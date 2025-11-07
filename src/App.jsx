@@ -53,11 +53,10 @@ const ProtectedRoute = ({ children }) => {
 // 🌷 Public route wrapper (for Landing, Login, Register)
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <LoadingScreen />;
-
-  // ✅ Only redirect *after* loading finishes
-  return !user ? children : <Navigate to="/dashboard" replace />;
+  if (loading) return <LoadingScreen />; // wait until token verification finishes
+  return user ? <Navigate to="/dashboard" replace /> : children;
 };
+
 
 // 💫 Smooth animated transitions between pages
 const AnimatedRoutes = () => {
