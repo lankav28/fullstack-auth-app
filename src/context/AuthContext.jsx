@@ -22,23 +22,24 @@ export const AuthProvider = ({ children }) => {
 
   // Fetch user profile from backend
   const fetchProfile = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/user/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data.user);
-      } else {
-        logout();
-      }
-    } catch (err) {
-      console.error(err);
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (res.ok && data.user) {
+      setUser(data.user);
+    } else {
       logout();
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    console.error("Profile fetch failed:", err);
+    logout();
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Login function
   const login = (newToken, userData) => {

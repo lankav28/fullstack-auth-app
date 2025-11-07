@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { UserPlus } from "lucide-react";
+import { useAuth } from "../context/AuthContext"; // ✅ import here (not inside function)
 
 export default function Register() {
+  const { login, showToast } = useAuth(); // ✅ use inside component
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,21 +17,26 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
+
       if (res.ok) {
-        console.log("Registration successful", data);
-        window.location.href = "/login";
+        login(data.token, data.user); // ✅ automatically log them in
+        showToast("🎉 Account created successfully!", "success");
+        window.location.href = "/dashboard";
       } else {
         setError(data.message || "Registration failed");
+        showToast("❌ Registration failed", "error");
       }
     } catch (err) {
+      console.error("Registration error:", err);
       setError("Network error. Please try again.");
+      showToast("⚠️ Network error. Try again.", "warning");
     } finally {
       setLoading(false);
     }
@@ -246,7 +253,7 @@ export default function Register() {
           </div>
 
           <h3 className="register-title">Create Account</h3>
-          <p className="register-subtitle">Join the pookie dashboard ✨</p>
+          <p className="register-subtitle">Join the dashboard ✨</p>
 
           {error && <div className="error-alert">{error}</div>}
 

@@ -22,46 +22,53 @@ export default function Dashboard() {
   }, [search, statusFilter, priorityFilter, token]);
 
   const fetchTasks = async () => {
-    if (!token) return;
-    setLoading(true);
-    setError("");
-    try {
-      const params = new URLSearchParams();
-      if (search) params.append("search", search);
-      if (statusFilter) params.append("status", statusFilter);
-      if (priorityFilter) params.append("priority", priorityFilter);
+  if (!token) return;
+  setLoading(true);
+  setError("");
+  try {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (statusFilter) params.append("status", statusFilter);
+    if (priorityFilter) params.append("priority", priorityFilter);
 
-      const res = await fetch(`http://localhost:5000/api/tasks?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data?.message || "Failed to load tasks");
-        setTasks([]);
-        return;
-      }
-      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
-    } catch (e) {
-      console.error(e);
-      setError("Network error. Is the backend running?");
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data?.message || "Failed to load tasks");
       setTasks([]);
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
+
+    setTasks(Array.isArray(data) ? data : data.tasks || []);
+  } catch (e) {
+    console.error(e);
+    setError("⚠️ Network error. Please check your connection.");
+    setTasks([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeleteTask = async (id) => {
-    if (!window.confirm("Delete this task?")) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/tasks/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) fetchTasks();
-    } catch (e) {
-      console.error(e);
+  if (!window.confirm("Are you sure you want to delete this task?")) return;
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      fetchTasks();
+    } else {
+      console.error("Failed to delete task");
     }
-  };
+  } catch (e) {
+    console.error("Delete error:", e);
+  }
+};
 
   return (
     <>

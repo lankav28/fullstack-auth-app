@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && copy dist\\index.html dist\\200.html",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -16,8 +16,8 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.552.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.5",
     "react-transition-group": "^4.4.5"
   },

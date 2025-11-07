@@ -209,7 +209,7 @@ export default function Landing() {
           </div>
 
           <div className="footer-text">
-            © {new Date().getFullYear()} Pookie Task Manager 🌸
+            © {new Date().getFullYear()}  Task Manager 🌸
           </div>
         </div>
       </div>

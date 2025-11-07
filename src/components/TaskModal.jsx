@@ -23,46 +23,48 @@ const TaskModal = ({ task, onClose, onSuccess, token }) => {
     setTimeout(onClose, 300);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      const url = task
-        ? `http://localhost:5000/api/tasks/${task._id}`
-        : "http://localhost:5000/api/tasks";
-      const method = task ? "PUT" : "POST";
+  try {
+    const baseUrl = import.meta.env.VITE_API_URL;
+    const url = task
+      ? `${baseUrl}/api/tasks/${task._id}`
+      : `${baseUrl}/api/tasks`;
+    const method = task ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ title, description, status, priority }),
-      });
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ title, description, status, priority }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-        onSuccess();
-        setTimeout(handleClose, 800);
-        showToast(
-          task ? "✅ Task updated successfully!" : "✅ Task created successfully!",
-          "success"
-        );
-      } else {
-        setError(data.message || "Failed to save task");
-        showToast("❌ Failed to save task", "error");
-      }
-    } catch {
-      setError("Network error. Please try again.");
-      showToast("⚠️ Network error, please try again.", "error");
-    } finally {
-      setLoading(false);
+    if (res.ok) {
+      onSuccess();
+      setTimeout(handleClose, 800);
+      showToast(
+        task ? "✅ Task updated successfully!" : "✅ Task created successfully!",
+        "success"
+      );
+    } else {
+      setError(data.message || "Failed to save task");
+      showToast("❌ Failed to save task", "error");
     }
-  };
+  } catch {
+    setError("Network error. Please try again.");
+    showToast("⚠️ Network error, please try again.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div

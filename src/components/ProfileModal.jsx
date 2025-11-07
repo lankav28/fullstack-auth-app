@@ -24,34 +24,36 @@ const ProfileModal = ({ onClose, onSuccess, token, user }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:5000/api/user/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name, bio }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast("✅ Profile updated successfully!", "success");
-        onSuccess();
-        setTimeout(handleClose, 800);
-      } else {
-        setError(data.message || "Failed to update profile");
-        showToast("❌ Failed to update profile", "error");
-      }
-    } catch {
-      setError("Network error. Please try again.");
-      showToast("⚠️ Network error. Try again.", "error");
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+  try {
+    const baseUrl = import.meta.env.VITE_API_URL;
+    const res = await fetch(`${baseUrl}/api/user/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name, bio }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast("✅ Profile updated successfully!", "success");
+      onSuccess();
+      setTimeout(handleClose, 800);
+    } else {
+      setError(data.message || "Failed to update profile");
+      showToast("❌ Failed to update profile", "error");
     }
-  };
+  } catch {
+    setError("Network error. Please try again.");
+    showToast("⚠️ Network error. Try again.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div
