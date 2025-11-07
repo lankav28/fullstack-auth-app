@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import "./AuthContext.css"; // Import the CSS file below
+import "./AuthContext.css"; // Keep your existing styling
 
 // Create Context
 const AuthContext = createContext();
@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [toast, setToast] = useState({ message: "", type: "" });
   const [isVisible, setIsVisible] = useState(false);
 
-  // Auto-fetch profile on token change
+  // Auto-fetch profile whenever token changes
   useEffect(() => {
     if (token) {
       fetchProfile();
@@ -20,44 +20,52 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  // Fetch user profile from backend
+  // ✅ Fetch user profile from backend (safe version)
   const fetchProfile = async () => {
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (res.ok && data.user) {
-      setUser(data.user);
-    } else {
-      logout();
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        console.warn("⚠️ Token expired or invalid, logging out...");
+        setTimeout(() => logout(), 500); // gentle logout
+      } else if (res.ok && data.user) {
+        console.log("✅ Profile fetched successfully:", data.user);
+        setUser(data.user);
+      } else {
+        console.warn("⚠️ Profile fetch returned no user data:", data);
+      }
+    } catch (err) {
+      console.error("❌ Profile fetch failed (network or backend issue):", err.message);
+      // Don't logout on network issues — just show a toast
+      showToast("Network issue while fetching profile", "warning");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Profile fetch failed:", err);
-    logout();
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-
-  // Login function
+  // ✅ Login function
   const login = (newToken, userData) => {
     localStorage.setItem("token", newToken);
+    localStorage.setItem("user", JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
-    showToast("Login successful!", "success");
+    showToast("🎉 Login successful!", "success");
   };
 
-  // Logout function
+  // ✅ Logout function
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
     setUser(null);
-    showToast("Logged out successfully!", "info");
+    showToast("👋 Logged out successfully!", "info");
   };
 
-  // Show toast message with animation
+  // ✅ Toast utilities
   const showToast = (message, type = "info") => {
     setToast({ message, type });
     setIsVisible(true);
@@ -123,18 +131,24 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, loading, fetchProfile, showToast }}
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        loading,
+        fetchProfile,
+        showToast,
+      }}
     >
       {children}
 
-      {/* Modern Toast Notification */}
+      {/* ✅ Toast Notification */}
       {toast.message && (
         <div className={`modern-toast-container ${isVisible ? "show" : ""}`}>
           <div className={`modern-toast ${getToastClass(toast.type)}`}>
-            <div className="toast-icon-wrapper">
-              {getToastIcon(toast.type)}
-            </div>
-            
+            <div className="toast-icon-wrapper">{getToastIcon(toast.type)}</div>
+
             <div className="toast-content">
               <div className="toast-message">{toast.message}</div>
             </div>
@@ -159,5 +173,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Custom hook
+// Hook export
 export const useAuth = () => useContext(AuthContext);
